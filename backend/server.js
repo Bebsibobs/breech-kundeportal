@@ -45,3 +45,17 @@ async function requireAuth(req, res, next) {
   req.user = data.user; // gjør brukeren tilgjengelig videre om ønskelig
   next();
 }
+
+// ------------------------------------------------------------
+//  RUTE 1: Hent alle kunder
+//  GET /api/customers   (beskyttet)
+// ------------------------------------------------------------
+app.get('/api/customers', requireAuth, async (req, res) => {
+  const { data, error } = await supabase
+    .from('customers')
+    .select('id, name, email, phone')
+    .order('name', { ascending: true });
+ 
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
