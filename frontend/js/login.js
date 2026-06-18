@@ -1,40 +1,47 @@
 // ------------------------------------------------------------
-//  Innlogging mot Supabase Auth
+//  Innlogging – sender e-post/passord til VÅR backend
 // ------------------------------------------------------------
 
-// Lag en Supabase-klient med den offentlige anon-nøkkelen.
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Er man allerede innlogget (har et token)? Send til dashboard.
+if (sessionStorage.getItem('token')) {
+  window.location.href = 'dashboard.html';
+}
 
-// Er brukeren allerede innlogget? Send rett til dashboard.
-sb.auth.getSession().then(({ data }) => {
-  if (data.session) window.location.href = "dashboard.html";
-});
+const form = document.getElementById('login-form');
+const errorEl = document.getElementById('error');
 
-const form = document.getElementById("login-form");
-const errorEl = document.getElementById("error");
-
-form.addEventListener("submit", async (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault(); // stopp vanlig skjema-innsending
-  errorEl.textContent = "";
+  errorEl.textContent = '';
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
 
-  // Frontend-validering (rask tilbakemelding til brukeren)
+  // Frontend-validering (rask tilbakemelding)
   if (!email || !password) {
-    errorEl.textContent = "Fyll inn både e-post og passord.";
+    errorEl.textContent = 'Fyll inn både e-post og passord.';
     return;
   }
 
-  // Passordet sendes kryptert (HTTPS/TLS) direkte til Supabase.
-  // Vi får tilbake en session med et JWT-token hvis det stemmer.
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  try {
+    // Sender innloggingen til backend over HTTPS.
+    const res = await fetch(API_URL + '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-  if (error) {
-    errorEl.textContent = "Feil e-post eller passord.";
-    return;
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorEl.textContent = data.error || 'Innlogging feilet.';
+      return;
+    }
+
+    // Backend ga oss et token -> lagre det og gå til dashboard.
+    sessionStorage.setItem('token', data.access_token);
+    window.location.href = 'dashboard.html';
+  } catch (e) {
+    errorEl.textContent = 'Får ikke kontakt med serveren.';
   }
-
-  // Token lagres automatisk av Supabase-klienten -> videre til dashboard.
-  window.location.href = "dashboard.html";
 });
