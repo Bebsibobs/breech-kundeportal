@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breech AS – Kundeportal</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <span class="brand">Breech AS – Kundeportal</span>
+    <button id="logout">Logg ut</button>
+  </header>
+
+  <main class="layout">
+    <!-- Venstre: liste over kunder -->
+    <section class="panel">
+      <h2>Kunder</h2>
+      <ul id="customer-list" class="list"></ul>
+    </section>
+
+    <!-- Høyre: ordrer for valgt kunde -->
+    <section class="panel">
+      <h2 id="orders-title">Ordrer</h2>
+      <p id="orders-hint">Velg en kunde for å se ordrer.</p>
+      <table id="orders-table" class="table" hidden>
+        <thead>
+          <tr>
+            <th>Hvitevare</th>
+            <th>Beskrivelse</th>
+            <th>Status</th>
+            <th>Beløp</th>
+            <th>Dato</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
