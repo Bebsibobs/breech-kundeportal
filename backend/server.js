@@ -21,3 +21,27 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
+
+
+// ------------------------------------------------------------
+//  MIDDLEWARE: krever gyldig innlogging (JWT-token)
+// ------------------------------------------------------------
+// Kjøres FØR de beskyttede rutene. Hvis token mangler eller er
+// ugyldig, stoppes forespørselen her med 401.
+async function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+ 
+  if (!token) {
+    return res.status(401).json({ error: 'Mangler token – du må logge inn.' });
+  }
+ 
+  // Supabase verifiserer at token er ekte og ikke utløpt.
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) {
+    return res.status(401).json({ error: 'Ugyldig eller utløpt token.' });
+  }
+ 
+  req.user = data.user; // gjør brukeren tilgjengelig videre om ønskelig
+  next();
+}
